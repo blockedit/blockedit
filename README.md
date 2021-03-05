@@ -1,0 +1,1 @@
+# @blockedit WYSIWYG editor kit
