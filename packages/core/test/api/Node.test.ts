@@ -10,6 +10,37 @@ const NodeAPI = new BENodeAPI<CustomNode, CustomLocation, typeof editorKit>(
 );
 
 describe('the Node API', () => {
+  describe('getNodeAt() function', () => {
+    const node: CustomNode = {
+      type: 'bar',
+      children: [
+        {
+          type: 'foo',
+          children: [
+            { type: 'leaf', text: 'a' },
+            { type: 'leaf', text: 'b' },
+          ],
+        },
+        { type: 'foo', children: [{ type: 'leaf', text: 'c' }] },
+      ],
+    };
+
+    it('can fetch a node by path', () => {
+      const nodeAtPath = NodeAPI.getNodeAt(node, [0, 1]);
+      expect(nodeAtPath).toMatchObject({ type: 'leaf', text: 'b' });
+    });
+
+    it('can fetch a node by location', () => {
+      const nodeAtPath = NodeAPI.getNodeAt(node, { path: [1, 0] });
+      expect(nodeAtPath).toMatchObject({ type: 'leaf', text: 'c' });
+    });
+
+    it("returns null, if the location doesn't exist", () => {
+      const nodeAtPath = NodeAPI.getNodeAt(node, [2, 0]);
+      expect(nodeAtPath).toEqual(null);
+    });
+  });
+
   describe('children() function', () => {
     it('returns an iterateable with all children of a node', () => {
       const node: CustomNode = {

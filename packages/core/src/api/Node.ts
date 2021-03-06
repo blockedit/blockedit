@@ -2,9 +2,10 @@ import {
   BEBaseElement,
   BEBaseLocation,
   BEBaseNode,
+  BELocation,
   BENodeMatch,
   BEPath,
-} from 'src/interfaces';
+} from '../interfaces';
 import { EditorKit } from '../editor-kit';
 
 /**
@@ -20,6 +21,30 @@ export class BENodeAPI<
 
   constructor(kit: T) {
     this.kit = kit;
+  }
+
+  getNodeAt<TResult extends TNode>(
+    root: TNode,
+    loc: BEPath | TLocation
+  ): TResult | null {
+    let node: TNode | null = root;
+    let path: BEPath;
+
+    if (BELocation.isLocation(loc)) {
+      path = loc.path;
+    } else {
+      path = loc;
+    }
+
+    path = [...path];
+
+    while (path.length && node) {
+      const index = path.shift()!;
+
+      node = this.kit.getChildAtIndex(node, index);
+    }
+
+    return node as TResult | null;
   }
 
   /**
