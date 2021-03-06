@@ -23,7 +23,13 @@ export class BENodeAPI<
     this.kit = kit;
   }
 
-  getNodeAt<TResult extends TNode>(
+  /**
+   * Get a sub-node from a node at a given location
+   * @param root node to be queried
+   * @param loc location of sub-node to be retrieved
+   * @returns node at the location
+   */
+  get<TResult extends TNode>(
     root: TNode,
     loc: BEPath | TLocation
   ): TResult | null {
@@ -48,6 +54,68 @@ export class BENodeAPI<
   }
 
   /**
+   * Query the first node of the root node, or the node targeted by the at option.
+   * @param root node to be queried
+   * @param options options
+   * @returns maybe, first node of the node in question
+   */
+  first<TResult extends TNode>(
+    root: TNode,
+    options: { at?: BEPath | TLocation; deep?: boolean } = {}
+  ): TResult | null {
+    const { at = [], deep = false } = options;
+
+    let node = this.get(root, at);
+
+    if (!node) {
+      return null;
+    }
+
+    do {
+      const tmp: TNode | null = this.kit.getChildAtIndex(node, 0);
+
+      if (!tmp) {
+        return node as TResult;
+      } else {
+        node = tmp;
+      }
+    } while (node && deep);
+
+    return node as TResult | null;
+  }
+
+  /**
+   * Query the last node of the root node, or the node targeted by the at option.
+   * @param root node to be queried
+   * @param options options
+   * @returns maybe, last node of the node in question
+   */
+  last<TResult extends TNode>(
+    root: TNode,
+    options: { at?: BEPath | TLocation; deep?: boolean } = {}
+  ): TResult | null {
+    const { at = [], deep = false } = options;
+
+    let node = this.get(root, at);
+
+    if (!node) {
+      return null;
+    }
+
+    do {
+      const childCount = this.kit.getChildCount(node);
+
+      if (childCount === null) {
+        return node as TResult;
+      } else {
+        node = this.kit.getChildAtIndex(node, childCount - 1)!; // since we use the childCount, we can be sure that we WILL get a node
+      }
+    } while (node && deep);
+
+    return node as TResult | null;
+  }
+
+  /**
    * Query function to iterate over all children of a given node.
    * @param root node to be queried
    * @param options options
@@ -55,13 +123,19 @@ export class BENodeAPI<
    */
   *children<TResult extends TNode>(
     root: TNode,
-    options: { reverse?: boolean } = {}
+    options: { at?: BEPath | TLocation; reverse?: boolean } = {}
   ): Generator<[TResult, number]> {
-    const { reverse = false } = options;
+    const { at = [], reverse = false } = options;
 
-    const childCount = this.kit.getChildCount(root);
+    const node = this.get(root, at);
 
-    if (childCount === null || this.kit.isLeaf(root)) {
+    if (!node) {
+      return;
+    }
+
+    const childCount = this.kit.getChildCount(node);
+
+    if (childCount === null || this.kit.isLeaf(node)) {
       return;
     }
 
@@ -76,7 +150,7 @@ export class BENodeAPI<
     }
 
     for (; i !== finish; i += direction) {
-      const child = this.kit.getChildAtIndex<TResult>(root, i);
+      const child = this.kit.getChildAtIndex<TResult>(node, i);
       if (child !== null) {
         yield [child, i];
       }

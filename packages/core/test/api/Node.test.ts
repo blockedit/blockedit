@@ -10,7 +10,7 @@ const NodeAPI = new BENodeAPI<CustomNode, CustomLocation, typeof editorKit>(
 );
 
 describe('the Node API', () => {
-  describe('getNodeAt() function', () => {
+  describe('get() function', () => {
     const node: CustomNode = {
       type: 'bar',
       children: [
@@ -26,18 +26,80 @@ describe('the Node API', () => {
     };
 
     it('can fetch a node by path', () => {
-      const nodeAtPath = NodeAPI.getNodeAt(node, [0, 1]);
+      const nodeAtPath = NodeAPI.get(node, [0, 1]);
       expect(nodeAtPath).toMatchObject({ type: 'leaf', text: 'b' });
     });
 
     it('can fetch a node by location', () => {
-      const nodeAtPath = NodeAPI.getNodeAt(node, { path: [1, 0] });
+      const nodeAtPath = NodeAPI.get(node, { path: [1, 0] });
       expect(nodeAtPath).toMatchObject({ type: 'leaf', text: 'c' });
     });
 
     it("returns null, if the location doesn't exist", () => {
-      const nodeAtPath = NodeAPI.getNodeAt(node, [2, 0]);
+      const nodeAtPath = NodeAPI.get(node, [2, 0]);
       expect(nodeAtPath).toEqual(null);
+    });
+  });
+
+  describe('first() function', () => {
+    const node = {
+      type: 'bar',
+      children: [
+        {
+          type: 'foo',
+          children: [
+            { type: 'leaf', text: 'a' },
+            { type: 'leaf', text: 'b' },
+          ],
+        },
+        { type: 'foo', children: [{ type: 'leaf', text: 'c' }] },
+      ],
+    };
+
+    it('can fetch the first node of the root', () => {
+      const first = NodeAPI.first(node as CustomNode);
+      expect(first).toMatchObject(node.children[0]);
+    });
+
+    it('can fetch the first leaf node of the root', () => {
+      const first = NodeAPI.first(node as CustomNode, { deep: true });
+      expect(first).toMatchObject(node.children[0].children[0]);
+    });
+
+    it('can fetch the first node of a child node', () => {
+      const first = NodeAPI.first(node as CustomNode, { at: [1] });
+      expect(first).toMatchObject(node.children[1].children[0]);
+    });
+  });
+
+  describe('last() function', () => {
+    const node = {
+      type: 'bar',
+      children: [
+        {
+          type: 'foo',
+          children: [
+            { type: 'leaf', text: 'a' },
+            { type: 'leaf', text: 'b' },
+          ],
+        },
+        { type: 'foo', children: [{ type: 'leaf', text: 'c' }] },
+      ],
+    };
+
+    it('can fetch the last node of the root', () => {
+      const last = NodeAPI.last(node as CustomNode);
+      expect(last).toMatchObject(node.children[1]);
+    });
+
+    it('can fetch the last leaf node of the root', () => {
+      const last = NodeAPI.last(node as CustomNode, { deep: true });
+      expect(last).toMatchObject(node.children[1].children[0]);
+    });
+
+    it('can fetch the last node of a child node', () => {
+      const last = NodeAPI.last(node as CustomNode, { at: [0] });
+      expect(last).toMatchObject(node.children[0].children[1]);
     });
   });
 
