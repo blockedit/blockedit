@@ -103,6 +103,70 @@ describe('the Node API', () => {
     });
   });
 
+  describe('next() function', () => {
+    const node = {
+      type: 'bar',
+      children: [
+        {
+          type: 'foo',
+          children: [
+            { type: 'leaf', text: 'a' },
+            { type: 'leaf', text: 'b' },
+          ],
+        },
+        { type: 'foo', children: [{ type: 'leaf', text: 'c' }] },
+      ],
+    };
+
+    it('returns the next sibling for a given path', () => {
+      expect(NodeAPI.next(node as CustomNode, [0, 0])).toMatchObject(
+        node.children[0].children[1]
+      );
+    });
+
+    it('returns the next sibling for a given location', () => {
+      expect(NodeAPI.next(node as CustomNode, { path: [0, 0] })).toMatchObject(
+        node.children[0].children[1]
+      );
+    });
+
+    it('returns null for non-existent sibling nodes', () => {
+      expect(NodeAPI.next(node as CustomNode, [1])).toEqual(null);
+    });
+  });
+
+  describe('prev() function', () => {
+    const node = {
+      type: 'bar',
+      children: [
+        {
+          type: 'foo',
+          children: [
+            { type: 'leaf', text: 'a' },
+            { type: 'leaf', text: 'b' },
+          ],
+        },
+        { type: 'foo', children: [{ type: 'leaf', text: 'c' }] },
+      ],
+    };
+
+    it('returns the previous sibling for a given path', () => {
+      expect(NodeAPI.prev(node as CustomNode, [0, 1])).toMatchObject(
+        node.children[0].children[0]
+      );
+    });
+
+    it('returns the previous sibling for a given location', () => {
+      expect(NodeAPI.prev(node as CustomNode, { path: [0, 1] })).toMatchObject(
+        node.children[0].children[0]
+      );
+    });
+
+    it('returns null for non-existent sibling nodes', () => {
+      expect(NodeAPI.prev(node as CustomNode, [0])).toEqual(null);
+    });
+  });
+
   describe('children() function', () => {
     it('returns an iterateable with all children of a node', () => {
       const node: CustomNode = {

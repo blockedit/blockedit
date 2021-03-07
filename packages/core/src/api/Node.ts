@@ -1,5 +1,4 @@
 import {
-  BEBaseElement,
   BEBaseLocation,
   BEBaseNode,
   BELocation,
@@ -113,6 +112,60 @@ export class BENodeAPI<
     } while (node && deep);
 
     return node as TResult | null;
+  }
+
+  /**
+   * Get the next sibling node from a location.
+   * @param root node to be queried
+   * @param loc location the next sibling should be retrieved from
+   * @returns the next sibling of location, if existent
+   */
+  next<TResult extends TNode>(
+    root: TNode,
+    loc: BEPath | TLocation
+  ): TResult | null {
+    let path: BEPath;
+
+    if (BELocation.isLocation(loc)) {
+      path = loc.path;
+    } else {
+      path = loc;
+    }
+
+    const nextPath = BEPath.next(path);
+
+    if (!nextPath) {
+      return null;
+    }
+
+    return this.get(root, nextPath);
+  }
+
+  /**
+   * Get the previous sibling node from a location.
+   * @param root node to be queried
+   * @param loc location, the previous sibling should be retrieved from
+   * @returns the previous sibling of the provided location, if existent
+   */
+  prev<TResult extends TNode>(
+    root: TNode,
+    loc: BEPath | TLocation
+  ): TResult | null {
+    let path: BEPath;
+
+    if (BELocation.isLocation(loc)) {
+      path = loc.path;
+    } else {
+      path = loc;
+    }
+
+    const nextPath = BEPath.prev(path);
+
+    if (!nextPath) {
+      return null;
+    }
+
+    return this.get(root, nextPath);
   }
 
   /**
