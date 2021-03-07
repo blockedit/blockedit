@@ -127,6 +127,42 @@ export const BEPath = {
   },
 
   /**
+   * Get the next possible path at the lowest level
+   * @param path path
+   * @returns the next possible path
+   */
+  next(path: BEPath): BEPath | null {
+    const p = [...path];
+    const index = p.pop();
+
+    if (index === undefined) {
+      return null;
+    }
+
+    return p.concat(index + 1);
+  },
+
+  /**
+   * Get the previous possible path at the lowest level
+   * @param path path
+   * @returns the previous path
+   */
+  prev(path: BEPath): BEPath | null {
+    const p = [...path];
+    const index = p.pop();
+
+    if (index === undefined) {
+      return null;
+    }
+
+    if (index <= 0) {
+      return null;
+    }
+
+    return p.concat(index - 1);
+  },
+
+  /**
    * Check wether path is within range or not.
    * @param path path to be checked
    * @param range range

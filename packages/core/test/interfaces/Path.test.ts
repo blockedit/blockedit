@@ -72,6 +72,28 @@ describe('the path path helper', () => {
     expect(BEPath.last(p2, p1)).toMatchObject(expectedResult);
   });
 
+  it('Path.next() returns the next possible path', () => {
+    const p: BEPath = [0, 0, 0];
+
+    const expectedPath = [0, 0, 1];
+    expect(BEPath.next(p)).toMatchObject(expectedPath);
+  });
+
+  describe('Path.prev()', () => {
+    it('returns the previous possible path', () => {
+      const p: BEPath = [0, 0, 1];
+
+      const expectedPath = [0, 0, 0];
+      expect(BEPath.prev(p)).toMatchObject(expectedPath);
+    });
+
+    it("returns null, if there's no previous possible task", () => {
+      const p: BEPath = [0, 0, 0];
+
+      expect(BEPath.prev(p)).toEqual(null);
+    });
+  });
+
   it('Path.parent() returns a childs parent path', () => {
     expect(BEPath.parent([])).toMatchObject([]);
     expect(BEPath.parent([1])).toMatchObject([]);
