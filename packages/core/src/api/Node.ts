@@ -53,6 +53,34 @@ export class BENodeAPI<
   }
 
   /**
+   * Get the parent node of a sub-node.
+   * @param root node to be queried
+   * @param loc location of sub-node to fetch the parent of
+   * @returns parent node of location
+   */
+  parent<TResult extends TNode>(
+    root: TNode,
+    loc: BEPath | TLocation
+  ): BENodeMatch<TResult> | null {
+    let path: BEPath;
+
+    if (BELocation.isLocation(loc)) {
+      path = loc.path;
+    } else {
+      path = loc;
+    }
+
+    const parentPath = BEPath.parent(path);
+    const parentNode = this.get(root, parentPath);
+
+    if (parentNode) {
+      return [parentNode as TResult, parentPath];
+    } else {
+      return null;
+    }
+  }
+
+  /**
    * Query the first node of the root node, or the node targeted by the at option.
    * @param root node to be queried
    * @param options options
@@ -61,7 +89,7 @@ export class BENodeAPI<
   first<TResult extends TNode>(
     root: TNode,
     options: { at?: BEPath | TLocation; deep?: boolean } = {}
-  ): TResult | null {
+  ): BENodeMatch<TResult> | null {
     const { at = [], deep = false } = options;
 
     let node = this.get(root, at);
@@ -70,17 +98,27 @@ export class BENodeAPI<
       return null;
     }
 
+    let currentPath = at;
+    if (BELocation.isLocation(currentPath)) {
+      currentPath = currentPath.path;
+    }
+
     do {
       const tmp: TNode | null = this.kit.getChildAtIndex(node, 0);
 
       if (!tmp) {
-        return node as TResult;
+        return [node as TResult, currentPath];
       } else {
         node = tmp;
+        currentPath.push(0);
       }
     } while (node && deep);
 
-    return node as TResult | null;
+    if (node) {
+      return [node as TResult, currentPath];
+    } else {
+      return null;
+    }
   }
 
   /**
@@ -92,7 +130,7 @@ export class BENodeAPI<
   last<TResult extends TNode>(
     root: TNode,
     options: { at?: BEPath | TLocation; deep?: boolean } = {}
-  ): TResult | null {
+  ): BENodeMatch<TResult> | null {
     const { at = [], deep = false } = options;
 
     let node = this.get(root, at);
@@ -101,17 +139,27 @@ export class BENodeAPI<
       return null;
     }
 
+    let currentPath = at;
+    if (BELocation.isLocation(currentPath)) {
+      currentPath = currentPath.path;
+    }
+
     do {
       const childCount = this.kit.getChildCount(node);
 
       if (childCount === null) {
-        return node as TResult;
+        return [node as TResult, currentPath];
       } else {
         node = this.kit.getChildAtIndex(node, childCount - 1)!; // since we use the childCount, we can be sure that we WILL get a node
+        currentPath.push(childCount - 1);
       }
     } while (node && deep);
 
-    return node as TResult | null;
+    if (node) {
+      return [node as TResult, currentPath];
+    } else {
+      return null;
+    }
   }
 
   /**
@@ -123,7 +171,7 @@ export class BENodeAPI<
   next<TResult extends TNode>(
     root: TNode,
     loc: BEPath | TLocation
-  ): TResult | null {
+  ): BENodeMatch<TResult> | null {
     let path: BEPath;
 
     if (BELocation.isLocation(loc)) {
@@ -138,7 +186,13 @@ export class BENodeAPI<
       return null;
     }
 
-    return this.get(root, nextPath);
+    const nextNode = this.get<TResult>(root, nextPath);
+
+    if (nextNode) {
+      return [nextNode, nextPath];
+    } else {
+      return null;
+    }
   }
 
   /**
@@ -150,7 +204,7 @@ export class BENodeAPI<
   prev<TResult extends TNode>(
     root: TNode,
     loc: BEPath | TLocation
-  ): TResult | null {
+  ): BENodeMatch<TResult> | null {
     let path: BEPath;
 
     if (BELocation.isLocation(loc)) {
@@ -159,13 +213,19 @@ export class BENodeAPI<
       path = loc;
     }
 
-    const nextPath = BEPath.prev(path);
+    const prevPath = BEPath.prev(path);
 
-    if (!nextPath) {
+    if (!prevPath) {
       return null;
     }
 
-    return this.get(root, nextPath);
+    const prevNode = this.get<TResult>(root, prevPath);
+
+    if (prevNode) {
+      return [prevNode, prevPath];
+    } else {
+      return null;
+    }
   }
 
   /**

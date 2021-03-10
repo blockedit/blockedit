@@ -41,6 +41,32 @@ describe('the Node API', () => {
     });
   });
 
+  describe('parent() function', () => {
+    const node = {
+      type: 'bar',
+      children: [
+        {
+          type: 'foo',
+          children: [
+            { type: 'leaf', text: 'a' },
+            { type: 'leaf', text: 'b' },
+          ],
+        },
+        { type: 'foo', children: [{ type: 'leaf', text: 'c' }] },
+      ],
+    };
+
+    it('can fetch the parent node of a given location', () => {
+      const parent = NodeAPI.parent(node as CustomNode, [0, 0]);
+      expect(parent).toMatchObject([node.children[0], [0]]);
+    });
+
+    it('can fetch parent node by location', () => {
+      const parent = NodeAPI.parent(node as CustomNode, { path: [0, 0] });
+      expect(parent).toMatchObject([node.children[0], [0]]);
+    });
+  });
+
   describe('first() function', () => {
     const node = {
       type: 'bar',
@@ -58,17 +84,17 @@ describe('the Node API', () => {
 
     it('can fetch the first node of the root', () => {
       const first = NodeAPI.first(node as CustomNode);
-      expect(first).toMatchObject(node.children[0]);
+      expect(first).toMatchObject([node.children[0], [0]]);
     });
 
     it('can fetch the first leaf node of the root', () => {
       const first = NodeAPI.first(node as CustomNode, { deep: true });
-      expect(first).toMatchObject(node.children[0].children[0]);
+      expect(first).toMatchObject([node.children[0].children[0], [0, 0]]);
     });
 
     it('can fetch the first node of a child node', () => {
       const first = NodeAPI.first(node as CustomNode, { at: [1] });
-      expect(first).toMatchObject(node.children[1].children[0]);
+      expect(first).toMatchObject([node.children[1].children[0], [1, 0]]);
     });
   });
 
@@ -89,17 +115,17 @@ describe('the Node API', () => {
 
     it('can fetch the last node of the root', () => {
       const last = NodeAPI.last(node as CustomNode);
-      expect(last).toMatchObject(node.children[1]);
+      expect(last).toMatchObject([node.children[1], [1]]);
     });
 
     it('can fetch the last leaf node of the root', () => {
       const last = NodeAPI.last(node as CustomNode, { deep: true });
-      expect(last).toMatchObject(node.children[1].children[0]);
+      expect(last).toMatchObject([node.children[1].children[0], [1, 0]]);
     });
 
     it('can fetch the last node of a child node', () => {
       const last = NodeAPI.last(node as CustomNode, { at: [0] });
-      expect(last).toMatchObject(node.children[0].children[1]);
+      expect(last).toMatchObject([node.children[0].children[1], [0, 1]]);
     });
   });
 
@@ -119,15 +145,17 @@ describe('the Node API', () => {
     };
 
     it('returns the next sibling for a given path', () => {
-      expect(NodeAPI.next(node as CustomNode, [0, 0])).toMatchObject(
-        node.children[0].children[1]
-      );
+      expect(NodeAPI.next(node as CustomNode, [0, 0])).toMatchObject([
+        node.children[0].children[1],
+        [0, 1],
+      ]);
     });
 
     it('returns the next sibling for a given location', () => {
-      expect(NodeAPI.next(node as CustomNode, { path: [0, 0] })).toMatchObject(
-        node.children[0].children[1]
-      );
+      expect(NodeAPI.next(node as CustomNode, { path: [0, 0] })).toMatchObject([
+        node.children[0].children[1],
+        [0, 1],
+      ]);
     });
 
     it('returns null for non-existent sibling nodes', () => {
@@ -151,15 +179,17 @@ describe('the Node API', () => {
     };
 
     it('returns the previous sibling for a given path', () => {
-      expect(NodeAPI.prev(node as CustomNode, [0, 1])).toMatchObject(
-        node.children[0].children[0]
-      );
+      expect(NodeAPI.prev(node as CustomNode, [0, 1])).toMatchObject([
+        node.children[0].children[0],
+        [0, 0],
+      ]);
     });
 
     it('returns the previous sibling for a given location', () => {
-      expect(NodeAPI.prev(node as CustomNode, { path: [0, 1] })).toMatchObject(
-        node.children[0].children[0]
-      );
+      expect(NodeAPI.prev(node as CustomNode, { path: [0, 1] })).toMatchObject([
+        node.children[0].children[0],
+        [0, 0],
+      ]);
     });
 
     it('returns null for non-existent sibling nodes', () => {
